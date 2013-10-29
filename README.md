@@ -35,6 +35,7 @@ ChangeLog
 ---------
 2011-04-02
  - Some bugfixes (by zyclonite)
+
 2010-10-15
  - Fix "OverrideGateway0" on non-darwin platforms: on those, pppd cowardly
    refuses to replace an existing default route. Reported by Bob Whitinger.
