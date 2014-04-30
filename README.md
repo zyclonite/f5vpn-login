@@ -33,6 +33,11 @@ James Y Knight, <foom@fuhm.net>
 
 ChangeLog
 ---------
+2014-04-30
+ - Ignore default gateway option added (by zyclonite)
+ - Reduce logging output (by zyclonite)
+ - verbose logging option added (by zyclonite)
+
 2011-04-02
  - Some bugfixes (by zyclonite)
 
