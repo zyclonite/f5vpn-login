@@ -6,6 +6,8 @@ Works with OSX and linux, at the moment.
 
 Copyright 2006-2010, James Y Knight <foom@fuhm.net>
 
+Customisation by Lukas Prettenthaler <rdx at wsn dot at>
+
 2010-08-30
 
     This program is free software: you can redistribute it and/or modify
@@ -54,6 +56,7 @@ except ImportError:
 ssl_cert_path = None
 proxy_addr = None
 verbosity = False
+ignore_dgw = False
 
 try:
     # The ssl module is New in python 2.6, and required for cert validation.
@@ -931,6 +934,7 @@ def routespec_to_revdns(netparts, bits):
                 for n in range(start_addr, start_addr + 2**(remaining_bits))]
 
 def execPPPd(params):
+    global ignore_dgw
     tunnel_host=params['tunnel_host0']
     tunnel_port=int(params['tunnel_port0'])
 
@@ -969,7 +973,7 @@ Cookie: MRHSession=%s\r
         routes_to_add = []
 
     override_gateway = ('UseDefaultGateway0' in params)
-    if override_gateway:
+    if override_gateway and ignore_dgw is False:
         # If the server says to redirect the default gateway, we need to first add
         # an explicit route for the VPN server with the /current/ default gateway.
         tunnel_ip = ssl_socket.getpeername()[0]
@@ -1063,7 +1067,7 @@ Cookie: MRHSession=%s\r
 
 
 def usage(exename, s):
-    print >>s, "Usage: %s [--verbose] [--dont-check-certificates] [--{http,socks5}-proxy=host:port] [[user@]host]" % exename
+    print >>s, "Usage: %s [--verbose] [--dont-check-certificates] [--{http,socks5}-proxy=host:port] [--ignore-dgf] [[user@]host]" % exename
 
 def get_prefs():
     try:
@@ -1088,7 +1092,7 @@ def write_prefs(line):
 #      various architectures.
 
 def main(argv):
-    global proxy_addr, verbosity
+    global proxy_addr, verbosity, ignore_dgw
     if '--help' in argv:
         usage(argv[0], sys.stdout)
         sys.exit(0)
@@ -1109,7 +1113,7 @@ def main(argv):
     user = getpass.getuser()
 
     try:
-        opts,args=getopt.getopt(argv[1:], "", ['verbose', 'http-proxy=', 'socks5-proxy=', 'dont-check-certificates'])
+        opts,args=getopt.getopt(argv[1:], "", ['verbose', 'ignore-dgw', 'http-proxy=', 'socks5-proxy=', 'dont-check-certificates'])
     except getopt.GetoptError, e:
         sys.stderr.write("Unknown option: %s\n" % e.opt)
         usage(argv[0], sys.stderr)
@@ -1145,6 +1149,8 @@ def main(argv):
     for opt,val in opts:
         if opt == '--verbose':
             verbosity = True
+        elif opt == '--ignore-dgw':
+            ignore_dgw = True
         elif opt == '--http-proxy':
             proxy_addr = ('http',) + parse_hostport(val)
             sys.stderr.write("Using proxy: %r\n" % (proxy_addr,))
@@ -1200,7 +1206,7 @@ def main(argv):
         for k,v in params.iteritems():
             sys.stderr.write("   %r: %r\n" % (k,v))
 
-    print "Got plugin params, execing vpn client"
+    print "Got plugin params, starting vpn client"
 
     execPPPd(params)
 
