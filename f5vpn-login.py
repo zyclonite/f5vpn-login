@@ -1067,7 +1067,7 @@ Cookie: MRHSession=%s\r
 
 
 def usage(exename, s):
-    print >>s, "Usage: %s [--verbose] [--dont-check-certificates] [--{http,socks5}-proxy=host:port] [--ignore-dgf] [[user@]host]" % exename
+    print >>s, "Usage: %s [--verbose] [--dont-check-certificates] [--{http,socks5}-proxy=host:port] [--ignore-dgw] [[user@]host]" % exename
 
 def get_prefs():
     try:
