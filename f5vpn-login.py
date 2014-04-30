@@ -108,6 +108,7 @@ def sts_result(sts):
         raise os.error, "Not signaled or exited???"
 
 def run_as_root(args, stdin=None):
+    global verbosity
     if stdin is not None:
         pipe_r, pipe_w = os.pipe()
     else:
@@ -123,6 +124,9 @@ def run_as_root(args, stdin=None):
 
         os.seteuid(0)
         os.setuid(0)
+        if verbosity is False:
+            os.close(1)
+            os.close(2)
         try:
             os.execv(args[0], args)
         except:
@@ -671,9 +675,11 @@ class LogWatcher:
     collected_log = ''
     iface_name = tty = remote_ip = local_ip = None
     notified = False
+    verbose = False
 
-    def __init__(self, ip_up):
+    def __init__(self, ip_up, verbose):
         self.ip_up = ip_up
+        self.verbose = verbose
 
     def _get_match(self, exp):
         match = re.search(exp, self.collected_log, re.MULTILINE)
@@ -681,7 +687,7 @@ class LogWatcher:
             return match.group(1)
 
     def process(self, logmsg):
-        if verbosity:
+        if self.verbose:
             print "PPPD LOG: %r" % logmsg
 
         self.collected_log += logmsg
@@ -698,7 +704,7 @@ class LogWatcher:
         if not (self.notified or
                 self.iface_name is None or self.tty is None or
                 self.remote_ip is None or self.local_ip is None):
-            if verbosity:
+            if self.verbose:
                 print "CALLING ip_up%r" % ((self.iface_name, self.tty, self.local_ip, self.remote_ip),)
             self.notified = True
             self.ip_up(self.iface_name, self.tty, self.local_ip, self.remote_ip)
@@ -711,6 +717,7 @@ def set_keepalive_host(host):
     keepalive_socket.setblocking(0)
 
 def run_event_loop(pppd_fd, ssl_socket, ssl, logpipe_r, ppp_ip_up):
+    global verbosity
     ssl_socket.setblocking(0)
     set_non_blocking(pppd_fd)
     set_non_blocking(logpipe_r)
@@ -726,7 +733,7 @@ def run_event_loop(pppd_fd, ssl_socket, ssl, logpipe_r, ppp_ip_up):
         sys.stderr.write("ssl_write_blocked_on_read=%r, ssl_read_blocked_on_write=%r, data_to_pppd=%r, data_to_ssl=%r, data_to_ssl_buf2=%r, time_since_last_activity=%r\n" % (ssl_write_blocked_on_read, ssl_read_blocked_on_write, data_to_pppd, data_to_ssl, data_to_ssl_buf2, time.time() - last_activity_time))
     signal.signal(signal.SIGUSR1, sigusr1)
 
-    logwatcher = LogWatcher(ppp_ip_up)
+    logwatcher = LogWatcher(ppp_ip_up, verbosity)
 
     last_activity_time = time.time()
 
@@ -770,7 +777,7 @@ def run_event_loop(pppd_fd, ssl_socket, ssl, logpipe_r, ppp_ip_up):
                 sys.stderr.write("Sending keepalive\n")
                 keepalive_socket.send('keepalive')
 
-		if verbosity:
+        if verbosity:
             print "SELECT GOT:", reads,writes,exc
 
         # To simplify matters, don't bother with what select returned. Just try
