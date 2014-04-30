@@ -52,8 +52,8 @@ except ImportError:
 
 # File that contains certificates to use
 ssl_cert_path = None
-
 proxy_addr = None
+verbosity = False
 
 try:
     # The ssl module is New in python 2.6, and required for cert validation.
@@ -681,7 +681,8 @@ class LogWatcher:
             return match.group(1)
 
     def process(self, logmsg):
-        print "PPPD LOG: %r" % logmsg
+        if verbosity:
+            print "PPPD LOG: %r" % logmsg
 
         self.collected_log += logmsg
 
@@ -697,7 +698,8 @@ class LogWatcher:
         if not (self.notified or
                 self.iface_name is None or self.tty is None or
                 self.remote_ip is None or self.local_ip is None):
-            print "CALLING ip_up%r" % ((self.iface_name, self.tty, self.local_ip, self.remote_ip),)
+            if verbosity:
+                print "CALLING ip_up%r" % ((self.iface_name, self.tty, self.local_ip, self.remote_ip),)
             self.notified = True
             self.ip_up(self.iface_name, self.tty, self.local_ip, self.remote_ip)
 
@@ -768,8 +770,8 @@ def run_event_loop(pppd_fd, ssl_socket, ssl, logpipe_r, ppp_ip_up):
                 sys.stderr.write("Sending keepalive\n")
                 keepalive_socket.send('keepalive')
 
-
-        #print "SELECT GOT:", reads,writes,exc
+		if verbosity:
+            print "SELECT GOT:", reads,writes,exc
 
         # To simplify matters, don't bother with what select returned. Just try
         # everything; it doesn't matter if it fails.
@@ -1054,7 +1056,7 @@ Cookie: MRHSession=%s\r
 
 
 def usage(exename, s):
-    print >>s, "Usage: %s [--dont-check-certificates] [--{http,socks5}-proxy=host:port] [[user@]host]" % exename
+    print >>s, "Usage: %s [--verbose] [--dont-check-certificates] [--{http,socks5}-proxy=host:port] [[user@]host]" % exename
 
 def get_prefs():
     try:
@@ -1079,7 +1081,7 @@ def write_prefs(line):
 #      various architectures.
 
 def main(argv):
-    global proxy_addr
+    global proxy_addr, verbosity
     if '--help' in argv:
         usage(argv[0], sys.stdout)
         sys.exit(0)
@@ -1131,7 +1133,6 @@ def main(argv):
     else:
         host = userhost
 
-    verbosity = False
     check_certificates = True
 
     for opt,val in opts:
