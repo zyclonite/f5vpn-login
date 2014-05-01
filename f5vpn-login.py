@@ -111,7 +111,6 @@ def sts_result(sts):
         raise os.error, "Not signaled or exited???"
 
 def run_as_root(args, stdin=None):
-    global verbosity
     if stdin is not None:
         pipe_r, pipe_w = os.pipe()
     else:
@@ -127,9 +126,6 @@ def run_as_root(args, stdin=None):
 
         os.seteuid(0)
         os.setuid(0)
-        if verbosity is False:
-            os.close(1)
-            os.close(2)
         try:
             os.execv(args[0], args)
         except:
