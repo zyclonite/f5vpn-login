@@ -582,7 +582,7 @@ Content-Length: %(len)d\r
     if session is None:
         pat = re.compile('<font color=red>(.*?)</font>', re.MULTILINE)
         for match in pat.finditer(result):
-            sys.stderr.write(match + '\n')
+            sys.stderr.write(match.group(1)+"\n")
             return None
 
         match = re.search("(Challenge: [^<]*)", result)

@@ -33,6 +33,9 @@ James Y Knight, <foom@fuhm.net>
 
 ChangeLog
 ---------
+2016-03-14
+ - Failed login fixed (by zyclonite)
+
 2014-04-30
  - Ignore default gateway option added (by zyclonite)
  - Reduce logging output (by zyclonite)
